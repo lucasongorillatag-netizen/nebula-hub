@@ -18,7 +18,7 @@ end)
 local Window = Rayfield:CreateWindow({
 	Name = "Nebula Hub",
 	LoadingTitle = "Nebula Hub",
-	LoadingSubtitle = "by ChatGPT",
+	LoadingSubtitle = "by OneWheelLucas",
 	ConfigurationSaving = {
 		Enabled = false,
 	},
