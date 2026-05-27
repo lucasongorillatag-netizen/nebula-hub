@@ -1,0 +1,203 @@
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+player.CharacterAdded:Connect(function(char)
+	character = char
+	humanoid = char:WaitForChild("Humanoid")
+	hrp = char:WaitForChild("HumanoidRootPart")
+end)
+
+local Window = Rayfield:CreateWindow({
+	Name = "Nebula Hub",
+	LoadingTitle = "Nebula Hub",
+	LoadingSubtitle = "by ChatGPT",
+	ConfigurationSaving = {
+		Enabled = false,
+	},
+	Discord = {
+		Enabled = true,
+		Invite = "OneWheelLucas",
+		RememberJoins = true,
+	},
+	KeySystem = true,
+	KeySettings = {
+		Title = "Nebula Hub Key",
+		Subtitle = "Key System",
+		Note = "Join the Discord for the key",
+		FileName = "NebulaKey",
+		SaveKey = false,
+		GrabKeyFromSite = false,
+		Key = {"MH9LLXAWHZYPD6F4N08Y"}
+	}
+})
+
+local MainTab = Window:CreateTab("Player", 4483362458)
+
+-- WalkSpeed
+MainTab:CreateSlider({
+	Name = "WalkSpeed",
+	Range = {0, 200},
+	Increment = 1,
+	Suffix = "Speed",
+	CurrentValue = 16,
+	Flag = "WalkSpeedSlider",
+	Callback = function(Value)
+		if humanoid then
+			humanoid.WalkSpeed = Value
+		end
+	end,
+})
+
+-- Jump Height
+MainTab:CreateSlider({
+	Name = "Jump Height",
+	Range = {0, 200},
+	Increment = 1,
+	Suffix = "Jump",
+	CurrentValue = 7.2,
+	Flag = "JumpHeightSlider",
+	Callback = function(Value)
+		if humanoid then
+			humanoid.JumpHeight = Value
+		end
+	end,
+})
+
+-- Fly System
+local flying = false
+local flySpeed = 60
+local bodyVelocity
+local bodyGyro
+
+local function stopFly()
+	flying = false
+
+	if bodyVelocity then
+		bodyVelocity:Destroy()
+		bodyVelocity = nil
+	end
+
+	if bodyGyro then
+		bodyGyro:Destroy()
+		bodyGyro = nil
+	end
+end
+
+local function startFly()
+	if flying then return end
+	flying = true
+
+	bodyVelocity = Instance.new("BodyVelocity")
+	bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+	bodyVelocity.Velocity = Vector3.zero
+	bodyVelocity.Parent = hrp
+
+	bodyGyro = Instance.new("BodyGyro")
+	bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+	bodyGyro.CFrame = workspace.CurrentCamera.CFrame
+	bodyGyro.Parent = hrp
+
+	local UIS = game:GetService("UserInputService")
+
+	RunService:BindToRenderStep("Fly", Enum.RenderPriority.Character.Value, function()
+		if not flying then return end
+
+		local cam = workspace.CurrentCamera
+		bodyGyro.CFrame = cam.CFrame
+
+		local moveDir = Vector3.zero
+
+		if UIS:IsKeyDown(Enum.KeyCode.W) then
+			moveDir += cam.CFrame.LookVector
+		end
+		if UIS:IsKeyDown(Enum.KeyCode.S) then
+			moveDir -= cam.CFrame.LookVector
+		end
+		if UIS:IsKeyDown(Enum.KeyCode.A) then
+			moveDir -= cam.CFrame.RightVector
+		end
+		if UIS:IsKeyDown(Enum.KeyCode.D) then
+			moveDir += cam.CFrame.RightVector
+		end
+		if UIS:IsKeyDown(Enum.KeyCode.Space) then
+			moveDir += Vector3.new(0,1,0)
+		end
+		if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then
+			moveDir -= Vector3.new(0,1,0)
+		end
+
+		bodyVelocity.Velocity = moveDir * flySpeed
+	end)
+end
+
+MainTab:CreateToggle({
+	Name = "Fly",
+	CurrentValue = false,
+	Flag = "FlyToggle",
+	Callback = function(Value)
+		if Value then
+			startFly()
+		else
+			RunService:UnbindFromRenderStep("Fly")
+			stopFly()
+		end
+	end,
+})
+
+MainTab:CreateSlider({
+	Name = "Fly Speed",
+	Range = {10, 200},
+	Increment = 5,
+	Suffix = "Fly",
+	CurrentValue = 60,
+	Flag = "FlySpeedSlider",
+	Callback = function(Value)
+		flySpeed = Value
+	end,
+})
+
+-- Noclip
+local noclip = false
+
+MainTab:CreateToggle({
+	Name = "Noclip",
+	CurrentValue = false,
+	Flag = "NoclipToggle",
+	Callback = function(Value)
+		noclip = Value
+	end,
+})
+
+RunService.Stepped:Connect(function()
+	if noclip and character then
+		for _, v in pairs(character:GetDescendants()) do
+			if v:IsA("BasePart") then
+				v.CanCollide = false
+			end
+		end
+	end
+end)
+
+-- Reset Character
+MainTab:CreateButton({
+	Name = "Reset Character",
+	Callback = function()
+		player.Character:BreakJoints()
+	end,
+})
+
+-- Destroy UI
+MainTab:CreateButton({
+	Name = "Destroy UI",
+	Callback = function()
+		Rayfield:Destroy()
+	end,
+})
