@@ -1,10 +1,9 @@
-
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-
 local player = Players.LocalPlayer
+
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local hrp = character:WaitForChild("HumanoidRootPart")
@@ -15,23 +14,25 @@ player.CharacterAdded:Connect(function(char)
 	hrp = char:WaitForChild("HumanoidRootPart")
 end)
 
+-- WINDOW
+
 local Window = Rayfield:CreateWindow({
 	Name = "Nebula Hub",
 	LoadingTitle = "Nebula Hub",
-	LoadingSubtitle = "by OneWheelLucas",
+	LoadingSubtitle = "Utility Hub",
 	ConfigurationSaving = {
 		Enabled = false,
 	},
 	Discord = {
 		Enabled = true,
 		Invite = "OneWheelLucas",
-		RememberJoins = true,
+		RememberJoins = false,
 	},
 	KeySystem = true,
 	KeySettings = {
-		Title = "Nebula Hub Key",
+		Title = "Nebula Hub",
 		Subtitle = "Key System",
-		Note = "Join the Discord for the key",
+		Note = "Join Discord For Key",
 		FileName = "NebulaKey",
 		SaveKey = false,
 		GrabKeyFromSite = false,
@@ -39,138 +40,126 @@ local Window = Rayfield:CreateWindow({
 	}
 })
 
-local MainTab = Window:CreateTab("Player", 4483362458)
+-- TABS
 
--- WalkSpeed
-MainTab:CreateSlider({
+local HomeTab = Window:CreateTab("Home", 4483362458)
+local PlayerTab = Window:CreateTab("Player", 4483362458)
+local VisualsTab = Window:CreateTab("Visuals", 4483362458)
+
+---------------------------------------------------
+-- HOME
+---------------------------------------------------
+
+HomeTab:CreateParagraph({
+	Title = "Nebula Hub",
+	Content = "Discord: https://discord.gg/Ydk5WEWt"
+})
+
+HomeTab:CreateButton({
+	Name = "Copy Discord Invite",
+	Callback = function()
+		setclipboard("https://discord.gg/Ydk5WEWt")
+	end,
+})
+
+HomeTab:CreateButton({
+	Name = "Destroy UI",
+	Callback = function()
+		Rayfield:Destroy()
+	end,
+})
+
+---------------------------------------------------
+-- PLAYER
+---------------------------------------------------
+
+PlayerTab:CreateSlider({
 	Name = "WalkSpeed",
 	Range = {0, 200},
 	Increment = 1,
 	Suffix = "Speed",
 	CurrentValue = 16,
-	Flag = "WalkSpeedSlider",
 	Callback = function(Value)
-		if humanoid then
-			humanoid.WalkSpeed = Value
-		end
+		humanoid.WalkSpeed = Value
 	end,
 })
 
--- Jump Height
-MainTab:CreateSlider({
+PlayerTab:CreateSlider({
 	Name = "Jump Height",
 	Range = {0, 200},
 	Increment = 1,
 	Suffix = "Jump",
 	CurrentValue = 7.2,
-	Flag = "JumpHeightSlider",
 	Callback = function(Value)
-		if humanoid then
-			humanoid.JumpHeight = Value
-		end
+		humanoid.JumpHeight = Value
 	end,
 })
 
--- Fly System
+-- FLY
+
 local flying = false
 local flySpeed = 60
-local bodyVelocity
-local bodyGyro
+local flyConnection
 
-local function stopFly()
-	flying = false
-
-	if bodyVelocity then
-		bodyVelocity:Destroy()
-		bodyVelocity = nil
-	end
-
-	if bodyGyro then
-		bodyGyro:Destroy()
-		bodyGyro = nil
-	end
-end
-
-local function startFly()
-	if flying then return end
-	flying = true
-
-	bodyVelocity = Instance.new("BodyVelocity")
-	bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-	bodyVelocity.Velocity = Vector3.zero
-	bodyVelocity.Parent = hrp
-
-	bodyGyro = Instance.new("BodyGyro")
-	bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-	bodyGyro.CFrame = workspace.CurrentCamera.CFrame
-	bodyGyro.Parent = hrp
-
-	local UIS = game:GetService("UserInputService")
-
-	RunService:BindToRenderStep("Fly", Enum.RenderPriority.Character.Value, function()
-		if not flying then return end
-
-		local cam = workspace.CurrentCamera
-		bodyGyro.CFrame = cam.CFrame
-
-		local moveDir = Vector3.zero
-
-		if UIS:IsKeyDown(Enum.KeyCode.W) then
-			moveDir += cam.CFrame.LookVector
-		end
-		if UIS:IsKeyDown(Enum.KeyCode.S) then
-			moveDir -= cam.CFrame.LookVector
-		end
-		if UIS:IsKeyDown(Enum.KeyCode.A) then
-			moveDir -= cam.CFrame.RightVector
-		end
-		if UIS:IsKeyDown(Enum.KeyCode.D) then
-			moveDir += cam.CFrame.RightVector
-		end
-		if UIS:IsKeyDown(Enum.KeyCode.Space) then
-			moveDir += Vector3.new(0,1,0)
-		end
-		if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then
-			moveDir -= Vector3.new(0,1,0)
-		end
-
-		bodyVelocity.Velocity = moveDir * flySpeed
-	end)
-end
-
-MainTab:CreateToggle({
+PlayerTab:CreateToggle({
 	Name = "Fly",
 	CurrentValue = false,
-	Flag = "FlyToggle",
 	Callback = function(Value)
-		if Value then
-			startFly()
+		flying = Value
+
+		if flying then
+			flyConnection = RunService.RenderStepped:Connect(function()
+				local cam = workspace.CurrentCamera
+				local dir = Vector3.zero
+				local UIS = game:GetService("UserInputService")
+
+				if UIS:IsKeyDown(Enum.KeyCode.W) then
+					dir += cam.CFrame.LookVector
+				end
+				if UIS:IsKeyDown(Enum.KeyCode.S) then
+					dir -= cam.CFrame.LookVector
+				end
+				if UIS:IsKeyDown(Enum.KeyCode.A) then
+					dir -= cam.CFrame.RightVector
+				end
+				if UIS:IsKeyDown(Enum.KeyCode.D) then
+					dir += cam.CFrame.RightVector
+				end
+				if UIS:IsKeyDown(Enum.KeyCode.Space) then
+					dir += Vector3.new(0,1,0)
+				end
+				if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then
+					dir -= Vector3.new(0,1,0)
+				end
+
+				hrp.Velocity = dir * flySpeed
+			end)
 		else
-			RunService:UnbindFromRenderStep("Fly")
-			stopFly()
+			if flyConnection then
+				flyConnection:Disconnect()
+			end
 		end
 	end,
 })
 
-MainTab:CreateSlider({
+PlayerTab:CreateSlider({
 	Name = "Fly Speed",
-	Range = {10, 200},
+	Range = {10, 300},
 	Increment = 5,
 	Suffix = "Fly",
 	CurrentValue = 60,
-	Flag = "FlySpeedSlider",
 	Callback = function(Value)
 		flySpeed = Value
 	end,
 })
 
--- Noclip
+-- NOCLIP
+
 local noclip = false
 
-MainTab:CreateToggle({
+PlayerTab:CreateToggle({
 	Name = "Noclip",
 	CurrentValue = false,
-	Flag = "NoclipToggle",
 	Callback = function(Value)
 		noclip = Value
 	end,
@@ -178,7 +167,7 @@ MainTab:CreateToggle({
 
 RunService.Stepped:Connect(function()
 	if noclip and character then
-		for _, v in pairs(character:GetDescendants()) do
+		for _,v in pairs(character:GetDescendants()) do
 			if v:IsA("BasePart") then
 				v.CanCollide = false
 			end
@@ -186,18 +175,137 @@ RunService.Stepped:Connect(function()
 	end
 end)
 
--- Reset Character
-MainTab:CreateButton({
-	Name = "Reset Character",
+-- FLING
+
+PlayerTab:CreateButton({
+	Name = "Fling Spin",
 	Callback = function()
-		player.Character:BreakJoints()
+		local bav = Instance.new("BodyAngularVelocity")
+		bav.AngularVelocity = Vector3.new(0,99999,0)
+		bav.MaxTorque = Vector3.new(math.huge,math.huge,math.huge)
+		bav.Parent = hrp
+
+		task.wait(1.5)
+
+		bav:Destroy()
 	end,
 })
 
--- Destroy UI
-MainTab:CreateButton({
-	Name = "Destroy UI",
-	Callback = function()
-		Rayfield:Destroy()
+---------------------------------------------------
+-- VISUALS
+---------------------------------------------------
+
+local espEnabled = false
+local namesEnabled = false
+local outlinesEnabled = true
+
+local espColor = Color3.fromRGB(170, 0, 255)
+local outlineColor = Color3.fromRGB(0,0,0)
+
+local highlights = {}
+
+local function createESP(plr)
+	if plr == player then return end
+	if not plr.Character then return end
+
+	local char = plr.Character
+
+	if highlights[plr] then
+		highlights[plr]:Destroy()
+	end
+
+	local highlight = Instance.new("Highlight")
+	highlight.FillColor = espColor
+	highlight.OutlineColor = outlineColor
+	highlight.FillTransparency = 0.35
+	highlight.OutlineTransparency = outlinesEnabled and 0 or 1
+	highlight.Adornee = char
+	highlight.Parent = game.CoreGui
+
+	highlights[plr] = highlight
+
+	if namesEnabled then
+		local billboard = Instance.new("BillboardGui")
+		billboard.Name = "NebulaNameESP"
+		billboard.Size = UDim2.new(0,200,0,50)
+		billboard.AlwaysOnTop = true
+		billboard.StudsOffset = Vector3.new(0,3,0)
+		billboard.Parent = char:FindFirstChild("Head")
+
+		local label = Instance.new("TextLabel")
+		label.Size = UDim2.new(1,0,1,0)
+		label.BackgroundTransparency = 1
+		label.Text = plr.Name
+		label.TextColor3 = espColor
+		label.TextStrokeTransparency = outlinesEnabled and 0 or 1
+		label.Font = Enum.Font.Montserrat
+		label.TextScaled = true
+		label.Parent = billboard
+	end
+end
+
+local function refreshESP()
+	for _,v in pairs(highlights) do
+		v:Destroy()
+	end
+
+	highlights = {}
+
+	for _,plr in pairs(Players:GetPlayers()) do
+		if espEnabled then
+			createESP(plr)
+		end
+	end
+end
+
+Players.PlayerAdded:Connect(function(plr)
+	plr.CharacterAdded:Connect(function()
+		task.wait(1)
+		refreshESP()
+	end)
+end)
+
+VisualsTab:CreateToggle({
+	Name = "ESP Boxes",
+	CurrentValue = false,
+	Callback = function(Value)
+		espEnabled = Value
+		refreshESP()
 	end,
+})
+
+VisualsTab:CreateToggle({
+	Name = "Name ESP",
+	CurrentValue = false,
+	Callback = function(Value)
+		namesEnabled = Value
+		refreshESP()
+	end,
+})
+
+VisualsTab:CreateToggle({
+	Name = "ESP Outlines",
+	CurrentValue = true,
+	Callback = function(Value)
+		outlinesEnabled = Value
+		refreshESP()
+	end,
+})
+
+VisualsTab:CreateColorPicker({
+	Name = "ESP Color",
+	Color = espColor,
+	Callback = function(Value)
+		espColor = Value
+		refreshESP()
+	end
+})
+
+VisualsTab:CreateColorPicker({
+	Name = "Outline Color",
+	Color = outlineColor,
+	Callback = function(Value)
+		outlineColor = Value
+		refreshESP()
+	end
 })
