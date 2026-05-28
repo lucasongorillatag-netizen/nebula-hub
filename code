@@ -2,8 +2,6 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UIS = game:GetService("UserInputService")
-
 local player = Players.LocalPlayer
 
 local character = player.Character or player.CharacterAdded:Wait()
@@ -16,27 +14,21 @@ player.CharacterAdded:Connect(function(char)
 	hrp = char:WaitForChild("HumanoidRootPart")
 end)
 
----------------------------------------------------
 -- WINDOW
----------------------------------------------------
 
 local Window = Rayfield:CreateWindow({
 	Name = "Nebula Hub",
 	LoadingTitle = "Nebula Hub",
-	LoadingSubtitle = "by OneWheelLucas",
-
+	LoadingSubtitle = "Utility Hub",
 	ConfigurationSaving = {
 		Enabled = false,
 	},
-
 	Discord = {
 		Enabled = true,
 		Invite = "pp8ZQpwM",
 		RememberJoins = false,
 	},
-
 	KeySystem = true,
-
 	KeySettings = {
 		Title = "Nebula Hub",
 		Subtitle = "Key System",
@@ -48,9 +40,7 @@ local Window = Rayfield:CreateWindow({
 	}
 })
 
----------------------------------------------------
 -- TABS
----------------------------------------------------
 
 local HomeTab = Window:CreateTab("Home", 4483362458)
 local PlayerTab = Window:CreateTab("Player", 4483362458)
@@ -62,20 +52,13 @@ local VisualsTab = Window:CreateTab("Visuals", 4483362458)
 
 HomeTab:CreateParagraph({
 	Title = "Nebula Hub",
-	Content = "discord.gg/pp8ZQpwM"
+	Content = "Discord Invite: OneWheelLucas"
 })
 
 HomeTab:CreateButton({
 	Name = "Copy Discord Invite",
 	Callback = function()
-		setclipboard("https://discord.gg/pp8ZQpwM")
-	end,
-})
-
-HomeTab:CreateButton({
-	Name = "Load Infinite Yield",
-	Callback = function()
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+		setclipboard("https://discord.gg/OneWheelLucas")
 	end,
 })
 
@@ -112,9 +95,7 @@ PlayerTab:CreateSlider({
 	end,
 })
 
----------------------------------------------------
 -- FLY
----------------------------------------------------
 
 local flying = false
 local flySpeed = 60
@@ -124,50 +105,39 @@ PlayerTab:CreateToggle({
 	Name = "Fly",
 	CurrentValue = false,
 	Callback = function(Value)
-
 		flying = Value
 
 		if flying then
-
 			flyConnection = RunService.RenderStepped:Connect(function()
-
 				local cam = workspace.CurrentCamera
 				local dir = Vector3.zero
+				local UIS = game:GetService("UserInputService")
 
 				if UIS:IsKeyDown(Enum.KeyCode.W) then
 					dir += cam.CFrame.LookVector
 				end
-
 				if UIS:IsKeyDown(Enum.KeyCode.S) then
 					dir -= cam.CFrame.LookVector
 				end
-
 				if UIS:IsKeyDown(Enum.KeyCode.A) then
 					dir -= cam.CFrame.RightVector
 				end
-
 				if UIS:IsKeyDown(Enum.KeyCode.D) then
 					dir += cam.CFrame.RightVector
 				end
-
 				if UIS:IsKeyDown(Enum.KeyCode.Space) then
 					dir += Vector3.new(0,1,0)
 				end
-
 				if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then
 					dir -= Vector3.new(0,1,0)
 				end
 
 				hrp.Velocity = dir * flySpeed
-
 			end)
-
 		else
-
 			if flyConnection then
 				flyConnection:Disconnect()
 			end
-
 		end
 	end,
 })
@@ -183,9 +153,7 @@ PlayerTab:CreateSlider({
 	end,
 })
 
----------------------------------------------------
 -- NOCLIP
----------------------------------------------------
 
 local noclip = false
 
@@ -198,47 +166,28 @@ PlayerTab:CreateToggle({
 })
 
 RunService.Stepped:Connect(function()
-
 	if noclip and character then
-
 		for _,v in pairs(character:GetDescendants()) do
-
 			if v:IsA("BasePart") then
 				v.CanCollide = false
 			end
-
 		end
 	end
 end)
 
----------------------------------------------------
 -- FLING
----------------------------------------------------
 
-local flingEnabled = false
-local flingVelocity
-
-PlayerTab:CreateToggle({
+PlayerTab:CreateButton({
 	Name = "Fling Spin",
-	CurrentValue = false,
-	Callback = function(Value)
+	Callback = function()
+		local bav = Instance.new("BodyAngularVelocity")
+		bav.AngularVelocity = Vector3.new(0,99999,0)
+		bav.MaxTorque = Vector3.new(math.huge,math.huge,math.huge)
+		bav.Parent = hrp
 
-		flingEnabled = Value
+		task.wait(1.5)
 
-		if flingEnabled then
-
-			flingVelocity = Instance.new("BodyAngularVelocity")
-			flingVelocity.AngularVelocity = Vector3.new(0,99999,0)
-			flingVelocity.MaxTorque = Vector3.new(math.huge,math.huge,math.huge)
-			flingVelocity.Parent = hrp
-
-		else
-
-			if flingVelocity then
-				flingVelocity:Destroy()
-			end
-
-		end
+		bav:Destroy()
 	end,
 })
 
@@ -250,108 +199,71 @@ local espEnabled = false
 local namesEnabled = false
 local outlinesEnabled = true
 
-local espColor = Color3.fromRGB(170,0,255)
+local espColor = Color3.fromRGB(170, 0, 255)
 local outlineColor = Color3.fromRGB(0,0,0)
 
 local highlights = {}
-local nameTags = {}
-
-local function clearESP()
-
-	for _,v in pairs(highlights) do
-		pcall(function()
-			v:Destroy()
-		end)
-	end
-
-	for _,v in pairs(nameTags) do
-		pcall(function()
-			v:Destroy()
-		end)
-	end
-
-	highlights = {}
-	nameTags = {}
-
-end
 
 local function createESP(plr)
-
 	if plr == player then return end
 	if not plr.Character then return end
 
 	local char = plr.Character
 
-	---------------------------------------------------
-	-- BOX ESP
-	---------------------------------------------------
-
-	if espEnabled then
-
-		local highlight = Instance.new("Highlight")
-		highlight.FillColor = espColor
-		highlight.OutlineColor = outlineColor
-		highlight.FillTransparency = 0.35
-		highlight.OutlineTransparency = outlinesEnabled and 0 or 1
-		highlight.Adornee = char
-		highlight.Parent = game.CoreGui
-
-		highlights[plr] = highlight
-
+	if highlights[plr] then
+		highlights[plr]:Destroy()
 	end
 
-	---------------------------------------------------
-	-- NAME ESP
-	---------------------------------------------------
+	local highlight = Instance.new("Highlight")
+	highlight.FillColor = espColor
+	highlight.OutlineColor = outlineColor
+	highlight.FillTransparency = 0.35
+	highlight.OutlineTransparency = outlinesEnabled and 0 or 1
+	highlight.Adornee = char
+	highlight.Parent = game.CoreGui
 
-	if namesEnabled and char:FindFirstChild("Head") then
+	highlights[plr] = highlight
 
+	if namesEnabled then
 		local billboard = Instance.new("BillboardGui")
-		billboard.Name = "NebulaESP"
+		billboard.Name = "NebulaNameESP"
 		billboard.Size = UDim2.new(0,200,0,50)
 		billboard.AlwaysOnTop = true
 		billboard.StudsOffset = Vector3.new(0,3,0)
-		billboard.Parent = char.Head
+		billboard.Parent = char:FindFirstChild("Head")
 
 		local label = Instance.new("TextLabel")
 		label.Size = UDim2.new(1,0,1,0)
 		label.BackgroundTransparency = 1
 		label.Text = plr.Name
 		label.TextColor3 = espColor
-		label.TextStrokeColor3 = outlineColor
 		label.TextStrokeTransparency = outlinesEnabled and 0 or 1
 		label.Font = Enum.Font.Montserrat
 		label.TextScaled = true
 		label.Parent = billboard
-
-		nameTags[plr] = billboard
-
 	end
-
 end
 
 local function refreshESP()
-
-	clearESP()
-
-	for _,plr in pairs(Players:GetPlayers()) do
-		createESP(plr)
+	for _,v in pairs(highlights) do
+		v:Destroy()
 	end
 
+	highlights = {}
+
+	for _,plr in pairs(Players:GetPlayers()) do
+		if espEnabled then
+			createESP(plr)
+		end
+	end
 end
 
 Players.PlayerAdded:Connect(function(plr)
-
 	plr.CharacterAdded:Connect(function()
 		task.wait(1)
 		refreshESP()
 	end)
-
 end)
-
----------------------------------------------------
--- VISUAL TOGGLES
----------------------------------------------------
 
 VisualsTab:CreateToggle({
 	Name = "ESP Boxes",
