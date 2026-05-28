@@ -1,4 +1,3 @@
-```lua id="f4xw8s"
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Players = game:GetService("Players")
@@ -32,7 +31,7 @@ local Window = Rayfield:CreateWindow({
 
 	Discord = {
 		Enabled = true,
-		Invite = "https://discord.gg/pp8ZQpwM",
+		Invite = "pp8ZQpwM",
 		RememberJoins = false,
 	},
 
@@ -49,8 +48,6 @@ local Window = Rayfield:CreateWindow({
 	}
 })
 
-Rayfield:SetTheme("Amethyst")
-
 ---------------------------------------------------
 -- TABS
 ---------------------------------------------------
@@ -65,13 +62,13 @@ local VisualsTab = Window:CreateTab("Visuals", 4483362458)
 
 HomeTab:CreateParagraph({
 	Title = "Nebula Hub",
-	Content = "Discord: https://discord.gg/pp8ZQpwM"
+	Content = "discord.gg/pp8ZQpwM"
 })
 
 HomeTab:CreateButton({
 	Name = "Copy Discord Invite",
 	Callback = function()
-		setclipboard("https://discord.gg/OneWheelLucas")
+		setclipboard("https://discord.gg/pp8ZQpwM")
 	end,
 })
 
@@ -127,9 +124,11 @@ PlayerTab:CreateToggle({
 	Name = "Fly",
 	CurrentValue = false,
 	Callback = function(Value)
+
 		flying = Value
 
 		if flying then
+
 			flyConnection = RunService.RenderStepped:Connect(function()
 
 				local cam = workspace.CurrentCamera
@@ -138,18 +137,23 @@ PlayerTab:CreateToggle({
 				if UIS:IsKeyDown(Enum.KeyCode.W) then
 					dir += cam.CFrame.LookVector
 				end
+
 				if UIS:IsKeyDown(Enum.KeyCode.S) then
 					dir -= cam.CFrame.LookVector
 				end
+
 				if UIS:IsKeyDown(Enum.KeyCode.A) then
 					dir -= cam.CFrame.RightVector
 				end
+
 				if UIS:IsKeyDown(Enum.KeyCode.D) then
 					dir += cam.CFrame.RightVector
 				end
+
 				if UIS:IsKeyDown(Enum.KeyCode.Space) then
 					dir += Vector3.new(0,1,0)
 				end
+
 				if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then
 					dir -= Vector3.new(0,1,0)
 				end
@@ -157,10 +161,13 @@ PlayerTab:CreateToggle({
 				hrp.Velocity = dir * flySpeed
 
 			end)
+
 		else
+
 			if flyConnection then
 				flyConnection:Disconnect()
 			end
+
 		end
 	end,
 })
@@ -205,7 +212,7 @@ RunService.Stepped:Connect(function()
 end)
 
 ---------------------------------------------------
--- FLING TOGGLE
+-- FLING
 ---------------------------------------------------
 
 local flingEnabled = false
@@ -243,7 +250,7 @@ local espEnabled = false
 local namesEnabled = false
 local outlinesEnabled = true
 
-local espColor = Color3.fromRGB(170, 0, 255)
+local espColor = Color3.fromRGB(170,0,255)
 local outlineColor = Color3.fromRGB(0,0,0)
 
 local highlights = {}
@@ -390,4 +397,3 @@ VisualsTab:CreateColorPicker({
 		refreshESP()
 	end
 })
-```
