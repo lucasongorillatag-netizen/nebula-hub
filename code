@@ -42,9 +42,15 @@ local Window = Rayfield:CreateWindow({
 
 -- TABS
 
-local HomeTab = Window:CreateTab("Home", 4483362458)
-local PlayerTab = Window:CreateTab("Player", 4483362458)
-local VisualsTab = Window:CreateTab("Visuals", 4483362458)
+local HomeTab = Window:CreateTab("Home", 136468674897681)
+local PlayerTab = Window:CreateTab("Player", 136468674897681)
+local VisualsTab = Window:CreateTab("Visuals", 136468674897681)
+
+Rayfield:LoadConfiguration()
+
+pcall(function()
+	Rayfield:SetTheme("AmberGlow")
+end)
 
 ---------------------------------------------------
 -- HOME
